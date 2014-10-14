@@ -1,0 +1,48 @@
+{
+  "name": "kafka-logger",
+  "version": "1.0.2",
+  "description": "A kafka logger for winston",
+  "main": "./index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "cover": "istanbul cover --report none --print detail _mocha -- test --reporter tap",
+    "view-cover": "istanbul report html && open ./coverage/index.html",
+    "test": "mocha --reporter tap ./test",
+    "start-zk": "zookeeper-server-start.sh ./test/config/zookeeper.properties",
+    "start-kafka": "kafka-server-start.sh ./test/config/server.properties"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:uber/kafka-logger"
+  },
+  "keywords": [
+    "winston",
+    "kafka",
+    "logger"
+  ],
+  "author": "David Ellis <d.f.ellis@ieee.org>",
+  "collaborators": [
+    {
+      "name": "David Ellis"
+    },
+    {
+      "name": "Raynos"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/uber/kafka-logger/issues"
+  },
+  "dependencies": {
+    "uber-nodesol": "git+ssh://git@github.com:uber/nodesol#v0.3.12",
+    "winston": "~0.7.2",
+    "xtend": "~2.1.1"
+  },
+  "devDependencies": {
+    "mocha": "~1.15.1",
+    "istanbul": "~0.1.46",
+    "uuid": "~1.4.1"
+  }
+}
