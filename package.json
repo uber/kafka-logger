@@ -1,6 +1,6 @@
 {
   "name": "kafka-logger",
-  "version": "2.0.1",
+  "version": "2.0.1-nodesol-write",
   "description": "A kafka logger for winston",
   "main": "./index.js",
   "directories": {
