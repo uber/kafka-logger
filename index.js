@@ -1,7 +1,7 @@
 /* jshint forin: false */
 var util = require('util');
 var Transport = require('winston').Transport;
-var NodeSol = require('uber-nodesol').NodeSol;
+var NodeSol = require('uber-nodesol-write').NodeSol;
 var hostName = require('os').hostname();
 var extend = require('xtend');
 
@@ -32,8 +32,8 @@ function KafkaLogger(options) {
 
     Transport.call(this, options);
     this.topic = options.topic || 'unknown';
-    this.host = options.host || 'localhost';
-    this.port = options.port || 2181;
+    this.leafHost = options.leafHost || 'localhost';
+    this.leafPort = options.leafPort || 9093;
     this.logger = options.logger;
     this.properties = options.properties || {};
     this.dateFormats = options.dateFormats || { isodate: 'iso' };
@@ -62,7 +62,9 @@ function KafkaLogger(options) {
     if (!this.kafkaClient) {
         this.connected = false;
         this.initTime = Date.now();
-        this.kafkaClient = new NodeSol({ host: this.host, port: this.port });
+        this.kafkaClient = new NodeSol({
+            leafHost: this.leafHost, leafPort: this.leafPort
+        });
         this.kafkaClient.connect(onConnect);
     }
 }
