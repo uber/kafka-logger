@@ -1,6 +1,6 @@
 {
   "name": "kafka-logger",
-  "version": "2.0.1-nodesol-write",
+  "version": "2.0.1",
   "description": "A kafka logger for winston",
   "main": "./index.js",
   "directories": {
@@ -36,7 +36,7 @@
     "url": "https://github.com/uber/kafka-logger/issues"
   },
   "dependencies": {
-    "uber-nodesol-write": "uber/nodesol-write#v0.3.12-initial",
+    "uber-nodesol-write": "^1.0.0",
     "winston": "~0.7.2",
     "xtend": "~2.1.1"
   },
