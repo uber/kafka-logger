@@ -1,7 +1,7 @@
 var assert = require('assert');
 var net = require('net');
 var uuid = require('uuid');
-var NodeSol = require('uber-nodesol-write').NodeSol;
+var NodeSol = require('uber-nodesol').NodeSol;
 var test = global.it;
 
 var KafkaLogger = require('../index.js');
