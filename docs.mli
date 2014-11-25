@@ -12,8 +12,8 @@ type Prober := {
 
 winston-kafka := ({
     topic: String,
-    host: String,
-    port: Number,
+    leafHost: String,
+    leafPort: Number,
     properties?: Object,
     dateFormats?: Object,
     peerId?: Number,
