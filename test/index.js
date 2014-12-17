@@ -1,5 +1,6 @@
-var assert = require('assert');
-var test = global.it;
+var test = require('tape');
+
+require('./kafka.js');
 
 var KafkaLogger = require('../index.js');
 
@@ -16,12 +17,14 @@ function fakeKafkaClient(listener) {
     return {
         produce: function (msg, meta, cb) {
             listener('message', msg, meta);
-            if (cb) cb();
+            if (cb) {
+                cb();
+            }
         }
     };
 }
 
-test('KafkaLogger can log messages', function (end) {
+test('KafkaLogger can log messages', function (assert) {
     var messages = [];
     var logger = new KafkaLogger({
         kafkaClient: fakeKafkaClient(function (t, msg, meta) {
@@ -41,10 +44,10 @@ test('KafkaLogger can log messages', function (end) {
     assert.equal(messages[1][1].level, 'error');
     assert.equal(messages[1][1].msg, 'oops {"foo":"bar"}');
 
-    end();
+    assert.end();
 });
 
-test('KafkaLogger writes to a prober', function (end) {
+test('KafkaLogger writes to a prober', function (assert) {
     var messages = [];
     var probes = [];
     var logger = new KafkaLogger({
@@ -71,10 +74,10 @@ test('KafkaLogger writes to a prober', function (end) {
     assert.equal(messages[1][1].level, 'error');
     assert.equal(messages[1][1].msg, 'Error: oops {}');
 
-    end();
+    assert.end();
 });
 
-test('logger adds properties', function (end) {
+test('logger adds properties', function (assert) {
     var messages = [];
     var logger = new KafkaLogger({
         topic: 'foobar',
@@ -92,10 +95,10 @@ test('logger adds properties', function (end) {
     assert.equal(messages[0][1].msg, 'oh hai {}');
     assert.equal(messages[0][1].regionName, 'New_York');
 
-    end();
+    assert.end();
 });
 
-test('invalid circular json meta', function (end) {
+test('invalid circular json meta', function (assert) {
     var messages = [];
     var logger = new KafkaLogger({
         topic: 'foobar',
@@ -113,10 +116,10 @@ test('invalid circular json meta', function (end) {
     assert.equal(messages[0][1].msg, 'oh hai bad meta object of type Object ' +
         'Converting circular structure to JSON');
 
-    end();
+    assert.end();
 });
 
-test('test probe failures trigger failureHandler', function (end) {
+test('test probe failures trigger failureHandler', function (assert) {
     var prober = {
         probe: function (thunk, bypass) {
             // side effect behind thunk is invalid. call bypass
@@ -133,7 +136,7 @@ test('test probe failures trigger failureHandler', function (end) {
         failureHandler: function (err) {
             assert.equal(err.message, 'oops!');
 
-            end();
+            assert.end();
         }
     });
 

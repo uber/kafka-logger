@@ -73,6 +73,17 @@ util.inherits(KafkaLogger, Transport);
 
 KafkaLogger.prototype.name = 'KafkaLogger';
 
+KafkaLogger.prototype.destroy = function destroy() {
+    var producer = this.kafkaClient.get_producer(this.topic);
+
+    if (producer && producer.connection &&
+        producer.connection.connection &&
+        producer.connection.connection._connection
+    ) {
+        producer.connection.connection._connection.destroy();
+    }
+};
+
 KafkaLogger.prototype._flush = function _flush() {
     while (this.initQueue.length > 0) {
         var tuple = this.initQueue.shift();

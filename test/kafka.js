@@ -1,53 +1,26 @@
-var assert = require('assert');
-var net = require('net');
-var uuid = require('uuid');
-var NodeSol = require('uber-nodesol').NodeSol;
-var test = global.it;
+var test = require('tape');
 
 var KafkaLogger = require('../index.js');
+var KafkaServer = require('./lib/kafka-server.js');
 
-var HOST = 'localhost';
-var PORT = 2181;
+test('KafkaLogger writes to a real kafka server', function (assert) {
+    var server = KafkaServer(function (msg) {
+        assert.equal(msg.topic, 'test-topic');
 
-test('KafkaLogger writes to a real kafka server', function (end) {
-    var socket = net.connect({ host: HOST, port: PORT });
+        var message = msg.messages[0];
+        assert.equal(message.payload.level, 'error');
+        assert.equal(message.payload.msg, 'some message {}');
 
-    socket.once('error', function () {
-        console.log('warning: not running kafka test, kafka is down.');
-        assert.ok(true);
-        end();
+        server.close();
+        logger.destroy();
+        assert.end();
     });
 
-    socket.once('connect', function () {
-        var logger = new KafkaLogger({
-            topic: 'test-topic',
-            host: HOST,
-            port: PORT
-        });
-
-        var client = new NodeSol({ host: HOST, port: PORT });
-        client.connect(function (err) {
-            /*jshint camelcase: false*/
-            assert.ifError(err);
-
-            // fetch producer to get NodeSol client to behave
-            client.get_producer('test-topic');
-
-            client.create_consumer(uuid(), 'test-topic', {}, function (stream) {
-                if (!stream) {
-                    return assert.fail('no stream');
-                }
-
-                stream.once('data', function (chunk) {
-                    var obj = JSON.parse(String(chunk));
-                    assert.equal(obj.level, 'error');
-                    assert.equal(obj.msg, 'some message {}');
-
-                    end();
-                });
-
-                logger.log('error', 'some message');
-            });
-        });
+    var logger = new KafkaLogger({
+        topic: 'test-topic',
+        leafHost: 'localhost',
+        leafPort: server.port
     });
+
+    logger.log('error', 'some message');
 });
