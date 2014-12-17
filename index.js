@@ -54,6 +54,7 @@ function KafkaLogger(options) {
     this.kafkaProber = options.kafkaProber || null;
     this.failureHandler = options.failureHandler || null;
     this.kafkaClient = options.kafkaClient || null;
+    this.isDisabled = options.isDisabled || null;
 
     this.connected = true;
     this.initQueue = [];
@@ -133,6 +134,13 @@ KafkaLogger.prototype.log = function(level, msg, meta, callback) {
 };
 
 function produceMessage(self, logMessage, callback) {
+    if (self.isDisabled && self.isDisabled()) {
+        if (callback) {
+            process.nextTick(callback);
+        }
+        return;
+    }
+
     var failureHandler = self.failureHandler
 
     if (self.kafkaProber) {
