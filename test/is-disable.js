@@ -8,13 +8,13 @@ test('KafkaLogger writes to a real kafka server', function (assert) {
         server.emit('msg', msg);
     });
 
-    var $isDisabled = false;
+    var isDisabledFlag = false;
     var logger = new KafkaLogger({
         topic: 'test-topic',
         leafHost: 'localhost',
         leafPort: server.port,
         isDisabled: function () {
-            return $isDisabled;
+            return isDisabledFlag;
         }
     });
 
@@ -22,9 +22,9 @@ test('KafkaLogger writes to a real kafka server', function (assert) {
     server.once('msg', function (msg) {
         assert.ok(msg);
 
-        $isDisabled = true;
+        isDisabledFlag = true;
         logger.log('error', 'some message', {}, function () {
-            $isDisabled = false;
+            isDisabledFlag = false;
 
             server.removeListener('msg', failure);
             logger.log('error', 'some message');
