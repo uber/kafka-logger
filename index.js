@@ -54,6 +54,7 @@ function KafkaLogger(options) {
     this.kafkaProber = options.kafkaProber || null;
     this.failureHandler = options.failureHandler || null;
     this.kafkaClient = options.kafkaClient || null;
+    this.isDisabled = options.isDisabled || null;
 
     this.connected = true;
     this.initQueue = [];
@@ -72,6 +73,17 @@ function KafkaLogger(options) {
 util.inherits(KafkaLogger, Transport);
 
 KafkaLogger.prototype.name = 'KafkaLogger';
+
+KafkaLogger.prototype.destroy = function destroy() {
+    var producer = this.kafkaClient.get_producer(this.topic);
+
+    if (producer && producer.connection &&
+        producer.connection.connection &&
+        producer.connection.connection._connection
+    ) {
+        producer.connection.connection._connection.destroy();
+    }
+};
 
 KafkaLogger.prototype._flush = function _flush() {
     while (this.initQueue.length > 0) {
@@ -122,6 +134,13 @@ KafkaLogger.prototype.log = function(level, msg, meta, callback) {
 };
 
 function produceMessage(self, logMessage, callback) {
+    if (self.isDisabled && self.isDisabled()) {
+        if (callback) {
+            process.nextTick(callback);
+        }
+        return;
+    }
+
     var failureHandler = self.failureHandler
 
     if (self.kafkaProber) {

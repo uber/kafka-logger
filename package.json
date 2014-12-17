@@ -9,9 +9,7 @@
   "scripts": {
     "cover": "istanbul cover --report none --print detail _mocha -- test --reporter tap",
     "view-cover": "istanbul report html && open ./coverage/index.html",
-    "test": "mocha --reporter tap ./test",
-    "start-zk": "zookeeper-server-start.sh ./test/config/zookeeper.properties",
-    "start-kafka": "kafka-server-start.sh ./test/config/server.properties"
+    "test": "node ./test"
   },
   "repository": {
     "type": "git",
@@ -42,7 +40,7 @@
   },
   "devDependencies": {
     "istanbul": "~0.1.46",
-    "mocha": "~1.15.1",
+    "tape": "^3.0.3",
     "uber-nodesol": "^0.3.12-yosemite",
     "uuid": "~1.4.1"
   }
