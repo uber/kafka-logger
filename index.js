@@ -116,13 +116,12 @@ KafkaLogger.prototype.log = function(level, msg, meta, callback) {
         }
     }
     logMessage.level = level;
-    try {
-        logMessage.msg = msg + ' ' + JSON.stringify(meta);
-    } catch (e) {
-        logMessage.msg = msg + ' bad meta object of type ' +
-                (typeof (meta) === 'object' ? meta.constructor.name :
-                typeof (meta)) + ' ' + e.message;
+    var jsonMsg = {}
+    jsonMsg.text = msg;
+    for (var property in meta) {
+        jsonMsg[property] = meta[property];
     }
+    logMessage.msg = jsonMsg;
 
     if (!this.connected && Date.now() < this.initTime + 5000) {
         return this.initQueue.push([logMessage, callback]);
