@@ -1,6 +1,6 @@
 {
   "name": "kafka-logger",
-  "version": "4.0.0-node-0.12",
+  "version": "4.0.0-node-0.12-1",
   "description": "A kafka logger for winston",
   "main": "./index.js",
   "directories": {
