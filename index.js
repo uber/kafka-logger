@@ -1,7 +1,7 @@
 /* jshint forin: false */
 var util = require('util');
 var Transport = require('winston').Transport;
-var NodeSol = require('uber-nodesol-write').NodeSol;
+var NodeSol = require('nodesol-write').NodeSol;
 var hostName = require('os').hostname();
 var extend = require('xtend');
 
