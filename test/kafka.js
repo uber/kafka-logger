@@ -9,7 +9,7 @@ test('KafkaLogger writes to a real kafka server', function (assert) {
 
         var message = msg.messages[0];
         assert.equal(message.payload.level, 'error');
-        assert.equal(message.payload.msg, 'some message {}');
+        assert.equal(message.payload.msg, 'some message');
 
         server.close();
         logger.destroy();

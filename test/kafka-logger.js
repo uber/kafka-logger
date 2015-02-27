@@ -37,10 +37,10 @@ test('KafkaLogger can log messages', function (assert) {
     assert.equal(messages.length, 2);
     assert.equal(messages[0][0], 'my-topic');
     assert.equal(messages[0][1].level, 'warn');
-    assert.equal(messages[0][1].msg, 'hello {}');
+    assert.equal(messages[0][1].msg, 'hello');
     assert.equal(messages[1][0], 'my-topic');
     assert.equal(messages[1][1].level, 'error');
-    assert.equal(messages[1][1].msg, 'oops {"foo":"bar"}');
+    assert.equal(messages[1][1].msg, 'oops');
 
     assert.end();
 });
@@ -67,10 +67,10 @@ test('KafkaLogger writes to a prober', function (assert) {
     assert.deepEqual(probes, ['thunk', 'thunk']);
     assert.equal(messages[0][0], 'my-topic-2');
     assert.equal(messages[0][1].level, 'info');
-    assert.equal(messages[0][1].msg, 'oh hai {}');
+    assert.equal(messages[0][1].msg, 'oh hai');
     assert.equal(messages[1][0], 'my-topic-2');
     assert.equal(messages[1][1].level, 'error');
-    assert.equal(messages[1][1].msg, 'Error: oops {}');
+    assert.equal(messages[1][1].msg.message, 'oops');
 
     assert.end();
 });
@@ -90,7 +90,7 @@ test('logger adds properties', function (assert) {
     logger.log('info', 'oh hai');
 
     assert.equal(messages.length, 1);
-    assert.equal(messages[0][1].msg, 'oh hai {}');
+    assert.equal(messages[0][1].msg, 'oh hai');
     assert.equal(messages[0][1].regionName, 'New_York');
 
     assert.end();
@@ -111,8 +111,7 @@ test('invalid circular json meta', function (assert) {
 
     assert.equal(messages.length, 1);
     assert.equal(messages[0][0], 'foobar');
-    assert.equal(messages[0][1].msg, 'oh hai bad meta object of type Object ' +
-        'Converting circular structure to JSON');
+    assert.equal(messages[0][1].msg, 'oh hai');
 
     assert.end();
 });
