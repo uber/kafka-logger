@@ -34,7 +34,7 @@
     "url": "https://github.com/uber/kafka-logger/issues"
   },
   "dependencies": {
-    "nodesol-write": "2.0.0",
+    "nodesol-write": "2.0.1",
     "winston-uber": "^1.0.0",
     "xtend": "~2.1.1"
   },
