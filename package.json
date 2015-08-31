@@ -41,6 +41,7 @@
   "devDependencies": {
     "istanbul": "~0.1.46",
     "tape": "^3.0.3",
+    "uber-licence": "^1.5.1",
     "uber-nodesol": "^0.3.12-yosemite",
     "uuid": "~1.4.1"
   }
