@@ -50,12 +50,12 @@ function KafkaLogger(options) {
     }
 
 
-    function onKafkaRectClientConnect(err) {
+    function onKafkaRestClientConnect(err) {
         if (!err) {
             if (self.logger) {
                 self.logger.info('KafkaRestClient connected to kafka');
             }
-            self.kafkaRectClientConnected = true;
+            self.kafkaRestClientConnected = true;
         } else {
             if (self.logger) {
                 self.logger.warn('KafkaRestClient could not connect to kafka');
@@ -71,7 +71,7 @@ function KafkaLogger(options) {
     this.leafPort = options.leafPort || 9093;
     this.proxyHost = options.proxyHost || 'localhost';
     if ('proxyPort' in options && options.proxyPort) {
-      this.proxyPort = options.proxyPort;
+        this.proxyPort = options.proxyPort;
     }
     this.logger = options.logger;
     this.properties = options.properties || {};
@@ -96,7 +96,7 @@ function KafkaLogger(options) {
     this.isDisabled = options.isDisabled || null;
 
     this.connected = true;
-    this.kafkaRectClientConnected = false;
+    this.kafkaRestClientConnected = false;
     this.initQueue = [];
     this.initTime = null;
     if (!this.kafkaRestClient) {
@@ -105,10 +105,10 @@ function KafkaLogger(options) {
                 proxyHost: this.proxyHost,
                 proxyPort: this.proxyPort
             });
-            this.kafkaRestClient.connect(onKafkaRectClientConnect);
+            this.kafkaRestClient.connect(onKafkaRestClientConnect);
         }
     } else {
-        this.kafkaRectClientConnected = true;
+        this.kafkaRestClientConnected = true;
     }
 
     if (!this.kafkaClient) {
@@ -176,7 +176,7 @@ KafkaLogger.prototype.log = function(level, msg, meta, callback) {
     logMessage.msg = msg;
     logMessage.fields = meta;
 
-    if ((!this.connected || (this.kafkaRestClient && !this.kafkaRectClientConnected))  && Date.now() < this.initTime + 5000) {
+    if ((!this.connected || (this.kafkaRestClient && !this.kafkaRestClientConnected))  && Date.now() < this.initTime + 5000) {
         return this.initQueue.push([logMessage, callback]);
     } else if (this.connected && this.initQueue.length) {
         this._flush();
@@ -203,7 +203,7 @@ function produceMessage(self, logMessage, callback) {
         self.kafkaClient.produce(self.topic, logMessage, callback);
     }
 
-    if (self.kafkaRectClientConnected) {
+    if (self.kafkaRestClientConnected) {
         self.kafkaRestClient.produce(self.topic, JSON.stringify(logMessage), logMessage.ts);
     }
 

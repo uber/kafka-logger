@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "cover": "istanbul cover test/index.js  --report none --print detail _mocha -- test --reporter tap",
+    "cover": "istanbul cover --report none --print detail _mocha -- test --reporter tap",
     "view-cover": "istanbul report html && open ./coverage/index.html",
     "check-cover": "istanbul check-coverage",
     "test": "node ./test"
@@ -44,12 +44,11 @@
   "devDependencies": {
     "istanbul": "~0.1.46",
     "tape": "^3.0.3",
-    "mocha": "*",
     "uber-licence": "^1.5.1",
     "uber-nodesol": "^0.3.12-yosemite",
     "uuid": "~1.4.1",
     "itape": "^1.5.0",
-    "rewire": "*",
+    "rewire": "^2.3.4",
     "uber-standard": "^3.6.4"
   }
 }
