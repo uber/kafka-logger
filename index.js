@@ -22,6 +22,7 @@
 var util = require('util');
 var Transport = require('winston-uber').Transport;
 var NodeSol = require('nodesol-write').NodeSol;
+var KafkaRestClient = require('./kafka-rest-client/kafka_producer');
 var hostName = require('os').hostname();
 var extend = require('xtend');
 
@@ -48,12 +49,30 @@ function KafkaLogger(options) {
         }
     }
 
+
+    function onKafkaRestClientConnect(err) {
+        if (!err) {
+            if (self.logger) {
+                self.logger.info('KafkaRestClient connected to kafka');
+            }
+            self.kafkaRestClientConnected = true;
+        } else {
+            if (self.logger) {
+                self.logger.warn('KafkaRestClient could not connect to kafka');
+            }
+        }
+    }
+
     options = options || {};
 
     Transport.call(this, options);
     this.topic = options.topic || 'unknown';
     this.leafHost = options.leafHost || 'localhost';
     this.leafPort = options.leafPort || 9093;
+    this.proxyHost = options.proxyHost || 'localhost';
+    if ('proxyPort' in options && options.proxyPort) {
+        this.proxyPort = options.proxyPort;
+    }
     this.logger = options.logger;
     this.properties = options.properties || {};
     this.dateFormats = options.dateFormats || { isodate: 'iso' };
@@ -77,8 +96,20 @@ function KafkaLogger(options) {
     this.isDisabled = options.isDisabled || null;
 
     this.connected = true;
+    this.kafkaRestClientConnected = false;
     this.initQueue = [];
     this.initTime = null;
+    if (!this.kafkaRestClient) {
+        if (this.proxyPort) {
+            this.kafkaRestClient = new KafkaRestClient({
+                proxyHost: this.proxyHost,
+                proxyPort: this.proxyPort
+            });
+            this.kafkaRestClient.connect(onKafkaRestClientConnect);
+        }
+    } else {
+        this.kafkaRestClientConnected = true;
+    }
 
     if (!this.kafkaClient) {
         this.connected = false;
@@ -103,6 +134,10 @@ KafkaLogger.prototype.destroy = function destroy() {
     ) {
         producer.connection.connection._connection.destroy();
     }
+
+    if (this.kafkaRestClient) {
+        this.kafkaRestClient.close();
+    }
 };
 
 KafkaLogger.prototype._flush = function _flush() {
@@ -117,16 +152,17 @@ KafkaLogger.prototype.log = function(level, msg, meta, callback) {
     meta = meta || {};
 
     var d = new Date();
+    var timestamp = d.getTime();
     for (var dateFormat in this.dateFormats) {
         switch(this.dateFormats[dateFormat]) {
         case 'epoch':
-            logMessage[dateFormat] = Math.floor(d.getTime() / 1000);
+            logMessage[dateFormat] = Math.floor(timestamp / 1000);
             break;
         case 'jsepoch':
-            logMessage[dateFormat] = d.getTime();
+            logMessage[dateFormat] = timestamp;
             break;
         case 'pyepoch':
-            logMessage[dateFormat] = d.getTime() / 1000;
+            logMessage[dateFormat] = timestamp / 1000;
             break;
         case 'iso':
             /* falls through */
@@ -135,11 +171,12 @@ KafkaLogger.prototype.log = function(level, msg, meta, callback) {
             break;
         }
     }
+    logMessage.ts = timestamp;
     logMessage.level = level;
     logMessage.msg = msg;
     logMessage.fields = meta;
 
-    if (!this.connected && Date.now() < this.initTime + 5000) {
+    if ((!this.connected || (this.kafkaRestClient && !this.kafkaRestClientConnected))  && Date.now() < this.initTime + 5000) {
         return this.initQueue.push([logMessage, callback]);
     } else if (this.connected && this.initQueue.length) {
         this._flush();
@@ -164,6 +201,10 @@ function produceMessage(self, logMessage, callback) {
         self.kafkaProber.probe(thunk, onFailure);
     } else {
         self.kafkaClient.produce(self.topic, logMessage, callback);
+    }
+
+    if (self.kafkaRestClientConnected) {
+        self.kafkaRestClient.produce(self.topic, JSON.stringify(logMessage), logMessage.ts);
     }
 
     function onFailure(err) {

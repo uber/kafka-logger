@@ -9,6 +9,7 @@
   "scripts": {
     "cover": "istanbul cover --report none --print detail _mocha -- test --reporter tap",
     "view-cover": "istanbul report html && open ./coverage/index.html",
+    "check-cover": "istanbul check-coverage",
     "test": "node ./test"
   },
   "repository": {
@@ -36,13 +37,18 @@
   "dependencies": {
     "nodesol-write": "2.0.1",
     "winston-uber": "^1.0.0",
-    "xtend": "^4.0.0"
+    "xtend": "^4.0.0",
+    "error": "^7.0.1",
+    "lb_pool": "^1.2.0"
   },
   "devDependencies": {
     "istanbul": "~0.1.46",
     "tape": "^3.0.3",
     "uber-licence": "^1.5.1",
     "uber-nodesol": "^0.3.12-yosemite",
-    "uuid": "~1.4.1"
+    "uuid": "~1.4.1",
+    "itape": "^1.5.0",
+    "rewire": "^2.3.4",
+    "uber-standard": "^3.6.4"
   }
 }
