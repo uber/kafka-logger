@@ -56,6 +56,7 @@ function KafkaLogger(options) {
                 self.logger.info('KafkaRestClient connected to kafka');
             }
             self.kafkaRestClientConnected = true;
+            self._flush();
         } else {
             if (self.logger) {
                 self.logger.warn('KafkaRestClient could not connect to kafka');
