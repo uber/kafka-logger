@@ -24,7 +24,7 @@ var KafkaLogger = require('../index.js');
 var KafkaServer = require('./lib/kafka-server.js');
 
 test('KafkaLogger writes to a real kafka server', function (assert) {
-    var server = KafkaServer(function (msg) {
+    var server = KafkaServer(function (error, msg) {
         assert.equal(msg.topic, 'test-topic');
 
         var message = msg.messages[0];

@@ -40,9 +40,14 @@ function KafkaServer(listener) {
         socket.on('data', onMessage);
 
         function onMessage(buf) {
-            var messages = parseMessage(buf);
-
-            messages.forEach(listener);
+            try {
+                var messages = parseMessage(buf);
+                messages.forEach(function eachMessage(msg) {
+                    listener(null, msg);
+                });
+            } catch (e) {
+                listener(e);
+            }
         }
     }
 }
