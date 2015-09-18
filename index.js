@@ -172,7 +172,9 @@ KafkaLogger.prototype.log = function(level, msg, meta, callback) {
             break;
         }
     }
-    logMessage.ts = timestamp;
+    if (!logMessage.ts) {
+        logMessage.ts = timestamp;
+    }
     logMessage.level = level;
     logMessage.msg = msg;
     logMessage.fields = meta;
