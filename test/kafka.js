@@ -44,3 +44,40 @@ test('KafkaLogger writes to a real kafka server', function (assert) {
 
     logger.log('error', 'some message');
 });
+
+var KafkaRestProxyServer = require('./lib/kafka-rest-proxy-server');
+test('KafkaLogger double writes to a real kafka server', function (assert) {
+  var server = KafkaServer(function (error, msg) {
+      assert.equal(msg.topic, 'testTopic0');
+
+      var message = msg.messages[0];
+      assert.equal(message.payload.level, 'error');
+      assert.equal(message.payload.msg, 'some message');
+      server.close();        
+  });
+  
+  var restServer = new KafkaRestProxyServer(4444, function (msg) {
+    assert.equal(msg.host ,require('os').hostname());
+    assert.equal(msg.level,'error');
+    assert.equal(msg.msg , 'some message'); 
+  });
+  
+  restServer.start();
+
+  var logger = new KafkaLogger({
+      topic: 'testTopic0',
+      leafHost: 'localhost',
+      leafPort: server.port,
+      proxyHost: 'localhost',
+      proxyPort: 4444
+  });
+
+  logger.log('error', 'some message');
+  
+  setTimeout(function stopRestServer() {
+    restServer.stop();
+    logger.destroy();
+    assert.end();
+  }, 1000);
+  
+});
