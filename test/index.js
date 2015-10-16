@@ -21,5 +21,3 @@
 require('./kafka.js');
 require('./kafka-logger.js');
 require('./is-disable.js');
-require('./test_kafka_producer.js');
-require('./test_kafka_rest_client.js');

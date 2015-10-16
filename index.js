@@ -22,7 +22,7 @@
 var util = require('util');
 var Transport = require('winston-uber').Transport;
 var NodeSol = require('nodesol-write').NodeSol;
-var KafkaRestClient = require('./kafka-rest-client/kafka_producer');
+var KafkaRestClient = require('kafka-rest-client');
 var hostName = require('os').hostname();
 var extend = require('xtend');
 

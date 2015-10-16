@@ -22,11 +22,12 @@
 var util = require('util');
 var http = require('http');
 
-function KafkaRestProxyServer(port) {
+function KafkaRestProxyServer(port, assertion) {
     var self = this;
     self.listenPort = port;
     self.sockets = {};
     self.nextSocketId = 0;
+    self.assertion = assertion;
     http.Server.call(this, this.handle);
 }
 
@@ -39,10 +40,16 @@ KafkaRestProxyServer.prototype.handle = function handle(req, res) {
         'localhost:4444': ['testTopic0', 'testTopic1', 'testTopic2', 'testTopic3'],
         'localhost:5555': ['testTopic4', 'testTopic5', 'testTopic6', 'testTopic7']
     };
-
     if (req.method === 'GET') {
         res.end(JSON.stringify(messages));
     } else if (req.method === 'POST') {
+        var body = '';
+        req.on('data', function (data) {
+            body += data;
+        });
+        req.on('end', function () {
+            self.assertion(JSON.parse(body))
+        });
         if (req.headers.timestamp) {
             res.end('{ version : 1, Status : SENT, message : {}}');
         } else {
