@@ -69,7 +69,9 @@ test('KafkaLogger double writes to a real kafka server', function (assert) {
       leafHost: 'localhost',
       leafPort: server.port,
       proxyHost: 'localhost',
-      proxyPort: 4444
+      proxyPort: 4444,
+      blacklistMigrator: true,
+      blacklistMigratorUrl: 'localhost:2222'
   });
 
   logger.log('error', 'some message');

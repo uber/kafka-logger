@@ -102,10 +102,20 @@ function KafkaLogger(options) {
     this.initTime = null;
     if (!this.kafkaRestClient) {
         if (this.proxyPort) {
-            this.kafkaRestClient = new KafkaRestClient({
+            var kafkaRestClientOptions = {
                 proxyHost: this.proxyHost,
                 proxyPort: this.proxyPort
-            });
+            };
+            if ('maxRetries' in options) {
+                kafkaRestClientOptions['maxRetries'] = options.maxRetries;
+            }
+            if ('blacklistMigrator' in options && 'blacklistMigratorUrl' in options) {
+                if (options.blacklistMigrator) {
+                    kafkaRestClientOptions['blacklistMigrator'] = options.blacklistMigrator;
+                    kafkaRestClientOptions['blacklistMigratorUrl'] = options.blacklistMigratorUrl;
+                }
+            }
+            this.kafkaRestClient = new KafkaRestClient(kafkaRestClientOptions);
             this.kafkaRestClient.connect(onKafkaRestClientConnect);
         }
     } else {
