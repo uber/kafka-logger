@@ -100,7 +100,7 @@ function KafkaLogger(options) {
     this.kafkaRestClientConnected = false;
     this.initQueue = [];
     this.initTime = null;
-    this.statsd = options.statsd;
+    this.statsd = options.statsd || null;
     if (!this.kafkaRestClient) {
         if (this.proxyPort) {
             var kafkaRestClientOptions = {
