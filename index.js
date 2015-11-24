@@ -100,11 +100,13 @@ function KafkaLogger(options) {
     this.kafkaRestClientConnected = false;
     this.initQueue = [];
     this.initTime = null;
+    this.statsd = options.statsd || null;
     if (!this.kafkaRestClient) {
         if (this.proxyPort) {
             var kafkaRestClientOptions = {
                 proxyHost: this.proxyHost,
-                proxyPort: this.proxyPort
+                proxyPort: this.proxyPort,
+                statsd: this.statsd
             };
             if ('maxRetries' in options) {
                 kafkaRestClientOptions['maxRetries'] = options.maxRetries;
