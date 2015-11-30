@@ -35,7 +35,7 @@
     "url": "https://github.com/uber/kafka-logger/issues"
   },
   "dependencies": {
-    "kafka-rest-client": "git@github.com:uber-common/node-kafka-rest-client:add-metrics.git",
+    "kafka-rest-client": "git@github.com:uber-common/node-kafka-rest-client.git#add-metrics",
     "nodesol-write": "2.0.1",
     "winston-uber": "^1.0.0",
     "xtend": "^4.0.0"
