@@ -117,6 +117,9 @@ function KafkaLogger(options) {
                     kafkaRestClientOptions['blacklistMigratorUrl'] = options.blacklistMigratorUrl;
                 }
             }
+            if ('statsd' in options) {
+                kafkaRestClientOptions['statsd'] = options.statsd;
+            }
             this.kafkaRestClient = new KafkaRestClient(kafkaRestClientOptions);
             this.kafkaRestClient.connect(onKafkaRestClientConnect);
         }
