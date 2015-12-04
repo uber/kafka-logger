@@ -95,6 +95,7 @@ function KafkaLogger(options) {
     this.failureHandler = options.failureHandler || null;
     this.kafkaClient = options.kafkaClient || null;
     this.isDisabled = options.isDisabled || null;
+    this.disableNodeSol = options.disableNodeSol || false;
 
     this.connected = true;
     this.kafkaRestClientConnected = false;
@@ -125,7 +126,7 @@ function KafkaLogger(options) {
         this.kafkaRestClientConnected = true;
     }
 
-    if (!this.kafkaClient) {
+    if (!this.kafkaClient && !this.disableNodeSol) {
         this.connected = false;
         this.initTime = Date.now();
         this.kafkaClient = new NodeSol({
@@ -211,16 +212,18 @@ function produceMessage(self, logMessage, callback) {
 
     var failureHandler = self.failureHandler
 
-    if (self.kafkaProber) {
-        var thunk = self.kafkaClient.produce.bind(self.kafkaClient,
-            self.topic, logMessage);
-        self.kafkaProber.probe(thunk, onFailure);
-    } else {
-        self.kafkaClient.produce(self.topic, logMessage, callback);
-    }
+    if(!self.disableNodeSol) {
+        if (self.kafkaProber) {
+            var thunk = self.kafkaClient.produce.bind(self.kafkaClient,
+                self.topic, logMessage);
+            self.kafkaProber.probe(thunk, onFailure);
+        } else {
+            self.kafkaClient.produce(self.topic, logMessage, callback);
+        }
 
-    if (self.kafkaRestClientConnected) {
-        self.kafkaRestClient.produce(self.topic, JSON.stringify(logMessage), logMessage.ts);
+        if (self.kafkaRestClientConnected) {
+            self.kafkaRestClient.produce(self.topic, JSON.stringify(logMessage), logMessage.ts);
+        }
     }
 
     function onFailure(err) {
