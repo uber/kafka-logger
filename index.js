@@ -133,6 +133,8 @@ function KafkaLogger(options) {
             leafHost: this.leafHost, leafPort: this.leafPort
         });
         this.kafkaClient.connect(onConnect);
+    } else {
+        this.connected = false;
     }
 }
 
