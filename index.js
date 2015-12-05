@@ -220,10 +220,10 @@ function produceMessage(self, logMessage, callback) {
         } else {
             self.kafkaClient.produce(self.topic, logMessage, callback);
         }
+    }
 
-        if (self.kafkaRestClientConnected) {
-            self.kafkaRestClient.produce(self.topic, JSON.stringify(logMessage), logMessage.ts);
-        }
+    if (self.kafkaRestClientConnected) {
+      self.kafkaRestClient.produce(self.topic, JSON.stringify(logMessage), logMessage.ts);
     }
 
     function onFailure(err) {
