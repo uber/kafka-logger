@@ -95,11 +95,12 @@ function KafkaLogger(options) {
     this.failureHandler = options.failureHandler || null;
     this.kafkaClient = options.kafkaClient || null;
     this.isDisabled = options.isDisabled || null;
+    this.disableNodeSol = options.disableNodeSol || false;
 
     this.connected = true;
     this.kafkaRestClientConnected = false;
     this.initQueue = [];
-    this.initTime = null;
+    this.initTime = Date.now();
     this.statsd = options.statsd || null;
     if (!this.kafkaRestClient) {
         if (this.proxyPort) {
@@ -111,7 +112,7 @@ function KafkaLogger(options) {
             if ('maxRetries' in options) {
                 kafkaRestClientOptions['maxRetries'] = options.maxRetries;
             }
-            if ('blacklistMigrator' in options && 'blacklistMigratorUrl' in options) {
+            if ('blacklistMigrator' in options && 'blacklistMigratorUrl' in options && !this.disableNodeSol) {
                 if (options.blacklistMigrator) {
                     kafkaRestClientOptions['blacklistMigrator'] = options.blacklistMigrator;
                     kafkaRestClientOptions['blacklistMigratorUrl'] = options.blacklistMigratorUrl;
@@ -127,13 +128,14 @@ function KafkaLogger(options) {
         this.kafkaRestClientConnected = true;
     }
 
-    if (!this.kafkaClient) {
+    if (!this.kafkaClient && !this.disableNodeSol) {
         this.connected = false;
-        this.initTime = Date.now();
         this.kafkaClient = new NodeSol({
             leafHost: this.leafHost, leafPort: this.leafPort
         });
         this.kafkaClient.connect(onConnect);
+    } else {
+        this.connected = false;
     }
 }
 
@@ -194,9 +196,9 @@ KafkaLogger.prototype.log = function(level, msg, meta, callback) {
     logMessage.msg = msg;
     logMessage.fields = meta;
 
-    if ((!this.connected || (this.kafkaRestClient && !this.kafkaRestClientConnected))  && Date.now() < this.initTime + 5000) {
+    if (((!this.connected && !this.disableNodeSol) || (this.kafkaRestClient && !this.kafkaRestClientConnected))  && Date.now() < this.initTime + 5000) {
         return this.initQueue.push([logMessage, callback]);
-    } else if (this.connected && this.initQueue.length) {
+    } else if ((this.connected || this.kafkaRestClientConnected) && this.initQueue.length) {
         this._flush();
     }
 
@@ -213,16 +215,18 @@ function produceMessage(self, logMessage, callback) {
 
     var failureHandler = self.failureHandler
 
-    if (self.kafkaProber) {
-        var thunk = self.kafkaClient.produce.bind(self.kafkaClient,
-            self.topic, logMessage);
-        self.kafkaProber.probe(thunk, onFailure);
-    } else {
-        self.kafkaClient.produce(self.topic, logMessage, callback);
+    if(!self.disableNodeSol) {
+        if (self.kafkaProber) {
+            var thunk = self.kafkaClient.produce.bind(self.kafkaClient,
+                self.topic, logMessage);
+            self.kafkaProber.probe(thunk, onFailure);
+        } else {
+            self.kafkaClient.produce(self.topic, logMessage, callback);
+        }
     }
 
     if (self.kafkaRestClientConnected) {
-        self.kafkaRestClient.produce(self.topic, JSON.stringify(logMessage), logMessage.ts);
+      self.kafkaRestClient.produce(self.topic, JSON.stringify(logMessage), logMessage.ts, callback);
     }
 
     function onFailure(err) {
