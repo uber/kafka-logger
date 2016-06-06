@@ -111,12 +111,6 @@ function KafkaLogger(options) {
             if ('maxRetries' in options) {
                 kafkaRestClientOptions['maxRetries'] = options.maxRetries;
             }
-            if ('blacklistMigrator' in options && 'blacklistMigratorUrl' in options) {
-                if (options.blacklistMigrator) {
-                    kafkaRestClientOptions['blacklistMigrator'] = options.blacklistMigrator;
-                    kafkaRestClientOptions['blacklistMigratorUrl'] = options.blacklistMigratorUrl;
-                }
-            }
             if ('statsd' in options) {
                 kafkaRestClientOptions['statsd'] = options.statsd;
             }
