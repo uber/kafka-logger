@@ -114,6 +114,12 @@ function KafkaLogger(options) {
             if ('statsd' in options) {
                 kafkaRestClientOptions['statsd'] = options.statsd;
             }
+            if (options.batching) {
+                self.batching = options.batching;
+            }
+            if (options.batchingWhitelist) {
+                self.batchingWhitelist = options.batchingWhitelist;
+            }
             this.kafkaRestClient = new KafkaRestClient(kafkaRestClientOptions);
             this.kafkaRestClient.connect(onKafkaRestClientConnect);
         }
