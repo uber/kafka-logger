@@ -68,8 +68,8 @@ function KafkaLogger(options) {
 
     Transport.call(this, options);
     this.topic = options.topic || 'unknown';
-    this.leafHost = options.leafHost || 'localhost';
-    this.leafPort = options.leafPort || 9093;
+    this.leafHost = options.leafHost;
+    this.leafPort = options.leafPort;
     this.proxyHost = options.proxyHost || 'localhost';
     if ('proxyPort' in options && options.proxyPort) {
         this.proxyPort = options.proxyPort;
@@ -111,14 +111,14 @@ function KafkaLogger(options) {
             if ('maxRetries' in options) {
                 kafkaRestClientOptions['maxRetries'] = options.maxRetries;
             }
-            if ('blacklistMigrator' in options && 'blacklistMigratorUrl' in options) {
-                if (options.blacklistMigrator) {
-                    kafkaRestClientOptions['blacklistMigrator'] = options.blacklistMigrator;
-                    kafkaRestClientOptions['blacklistMigratorUrl'] = options.blacklistMigratorUrl;
-                }
-            }
             if ('statsd' in options) {
                 kafkaRestClientOptions['statsd'] = options.statsd;
+            }
+            if (options.batching) {
+                kafkaRestClientOptions['batching'] = options.batching;
+            }
+            if (options.batchingWhitelist) {
+                kafkaRestClientOptions['batchingWhitelist'] = options.batchingWhitelist;
             }
             this.kafkaRestClient = new KafkaRestClient(kafkaRestClientOptions);
             this.kafkaRestClient.connect(onKafkaRestClientConnect);
@@ -127,7 +127,7 @@ function KafkaLogger(options) {
         this.kafkaRestClientConnected = true;
     }
 
-    if (!this.kafkaClient) {
+    if (!this.kafkaClient && this.leafHost && this.leafPort) {
         this.connected = false;
         this.initTime = Date.now();
         this.kafkaClient = new NodeSol({
@@ -142,13 +142,15 @@ util.inherits(KafkaLogger, Transport);
 KafkaLogger.prototype.name = 'KafkaLogger';
 
 KafkaLogger.prototype.destroy = function destroy() {
-    var producer = this.kafkaClient.get_producer(this.topic);
+    if (this.kafkaClient) {
+        var producer = this.kafkaClient.get_producer(this.topic);
 
-    if (producer && producer.connection &&
-        producer.connection.connection &&
-        producer.connection.connection._connection
-    ) {
-        producer.connection.connection._connection.destroy();
+        if (producer && producer.connection &&
+            producer.connection.connection &&
+            producer.connection.connection._connection
+        ) {
+            producer.connection.connection._connection.destroy();
+        }
     }
 
     if (this.kafkaRestClient) {
@@ -213,12 +215,14 @@ function produceMessage(self, logMessage, callback) {
 
     var failureHandler = self.failureHandler
 
-    if (self.kafkaProber) {
-        var thunk = self.kafkaClient.produce.bind(self.kafkaClient,
-            self.topic, logMessage);
-        self.kafkaProber.probe(thunk, onFailure);
-    } else {
-        self.kafkaClient.produce(self.topic, logMessage, callback);
+    if (self.kafkaClient) {
+        if (self.kafkaProber) {
+            var thunk = self.kafkaClient.produce.bind(self.kafkaClient,
+                self.topic, logMessage);
+            self.kafkaProber.probe(thunk, onFailure);
+        } else {
+            self.kafkaClient.produce(self.topic, logMessage, callback);
+        }
     }
 
     if (self.kafkaRestClientConnected) {
