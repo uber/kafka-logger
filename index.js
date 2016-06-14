@@ -118,7 +118,7 @@ function KafkaLogger(options) {
             if ('statsd' in options) {
                 kafkaRestClientOptions['statsd'] = options.statsd;
             }
-            if (options.batching) {
+            if ('batching' in options) {
                 kafkaRestClientOptions['batching'] = options.batching;
             }
             if (options.batchingWhitelist) {
