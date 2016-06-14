@@ -39,7 +39,9 @@ function KafkaLogger(options) {
                 self.logger.info('KafkaClient connected to kafka');
             }
             self.connected = true;
-            self._flush();
+            if (!this.kafkaRestClient || (this.kafkaRestClient && this.kafkaRestClientConnected)) {
+                self._flush();
+            }
         } else {
             if (self.logger) {
                 self.logger.warn('KafkaClient could not connect to kafka');
@@ -56,7 +58,9 @@ function KafkaLogger(options) {
                 self.logger.info('KafkaRestClient connected to kafka');
             }
             self.kafkaRestClientConnected = true;
-            self._flush();
+            if (!this.kafkaClient || (this.kafkaClient && this.connected)) {
+                self._flush();
+            }
         } else {
             if (self.logger) {
                 self.logger.warn('KafkaRestClient could not connect to kafka');
@@ -99,7 +103,7 @@ function KafkaLogger(options) {
     this.connected = true;
     this.kafkaRestClientConnected = false;
     this.initQueue = [];
-    this.initTime = null;
+    this.initTime = Date.now();
     this.statsd = options.statsd || null;
     if (!this.kafkaRestClient) {
         if (this.proxyPort) {
@@ -129,7 +133,6 @@ function KafkaLogger(options) {
 
     if (!this.kafkaClient && this.leafHost && this.leafPort) {
         this.connected = false;
-        this.initTime = Date.now();
         this.kafkaClient = new NodeSol({
             leafHost: this.leafHost, leafPort: this.leafPort
         });
@@ -196,7 +199,7 @@ KafkaLogger.prototype.log = function(level, msg, meta, callback) {
     logMessage.msg = msg;
     logMessage.fields = meta;
 
-    if ((!this.connected || (this.kafkaRestClient && !this.kafkaRestClientConnected))  && Date.now() < this.initTime + 5000) {
+    if (((this.kafkaClient && !this.connected) || (this.kafkaRestClient && !this.kafkaRestClientConnected)) && Date.now() < this.initTime + 5000) {
         return this.initQueue.push([logMessage, callback]);
     } else if (this.connected && this.initQueue.length) {
         this._flush();
@@ -227,6 +230,9 @@ function produceMessage(self, logMessage, callback) {
 
     if (self.kafkaRestClientConnected) {
         self.kafkaRestClient.produce(self.topic, JSON.stringify(logMessage), logMessage.ts);
+        if (!self.kafkaClient) {
+            callback();
+        }
     }
 
     function onFailure(err) {
