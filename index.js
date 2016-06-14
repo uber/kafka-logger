@@ -196,7 +196,7 @@ KafkaLogger.prototype.log = function(level, msg, meta, callback) {
     logMessage.msg = msg;
     logMessage.fields = meta;
 
-    if ((!this.connected || (this.kafkaRestClient && !this.kafkaRestClientConnected))  && Date.now() < this.initTime + 5000) {
+    if ((this.kafkaClient && !this.connected) || (this.kafkaRestClient && !this.kafkaRestClientConnected)) {
         return this.initQueue.push([logMessage, callback]);
     } else if (this.connected && this.initQueue.length) {
         this._flush();
@@ -227,6 +227,9 @@ function produceMessage(self, logMessage, callback) {
 
     if (self.kafkaRestClientConnected) {
         self.kafkaRestClient.produce(self.topic, JSON.stringify(logMessage), logMessage.ts);
+        if (!self.kafkaClient) {
+            callback();
+        }
     }
 
     function onFailure(err) {
