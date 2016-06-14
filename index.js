@@ -103,7 +103,7 @@ function KafkaLogger(options) {
     this.connected = true;
     this.kafkaRestClientConnected = false;
     this.initQueue = [];
-    this.initTime = null;
+    this.initTime = Date.now();
     this.statsd = options.statsd || null;
     if (!this.kafkaRestClient) {
         if (this.proxyPort) {
@@ -133,7 +133,6 @@ function KafkaLogger(options) {
 
     if (!this.kafkaClient && this.leafHost && this.leafPort) {
         this.connected = false;
-        this.initTime = Date.now();
         this.kafkaClient = new NodeSol({
             leafHost: this.leafHost, leafPort: this.leafPort
         });
@@ -200,7 +199,7 @@ KafkaLogger.prototype.log = function(level, msg, meta, callback) {
     logMessage.msg = msg;
     logMessage.fields = meta;
 
-    if ((this.kafkaClient && !this.connected) || (this.kafkaRestClient && !this.kafkaRestClientConnected)) {
+    if ((this.kafkaClient && !this.connected) || (this.kafkaRestClient && !this.kafkaRestClientConnected) && Date.now() < this.initTime + 5000) {
         return this.initQueue.push([logMessage, callback]);
     } else if (this.connected && this.initQueue.length) {
         this._flush();
