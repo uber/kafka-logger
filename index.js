@@ -199,7 +199,7 @@ KafkaLogger.prototype.log = function(level, msg, meta, callback) {
     logMessage.msg = msg;
     logMessage.fields = meta;
 
-    if ((this.kafkaClient && !this.connected) || (this.kafkaRestClient && !this.kafkaRestClientConnected) && Date.now() < this.initTime + 5000) {
+    if (((this.kafkaClient && !this.connected) || (this.kafkaRestClient && !this.kafkaRestClientConnected)) && Date.now() < this.initTime + 5000) {
         return this.initQueue.push([logMessage, callback]);
     } else if (this.connected && this.initQueue.length) {
         this._flush();
