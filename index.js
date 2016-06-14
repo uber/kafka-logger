@@ -39,7 +39,9 @@ function KafkaLogger(options) {
                 self.logger.info('KafkaClient connected to kafka');
             }
             self.connected = true;
-            self._flush();
+            if (!this.kafkaRestClient || (this.kafkaRestClient && this.kafkaRestClientConnected)) {
+                self._flush();
+            }
         } else {
             if (self.logger) {
                 self.logger.warn('KafkaClient could not connect to kafka');
@@ -56,7 +58,9 @@ function KafkaLogger(options) {
                 self.logger.info('KafkaRestClient connected to kafka');
             }
             self.kafkaRestClientConnected = true;
-            self._flush();
+            if (!this.kafkaClient || (this.kafkaClient && this.connected)) {
+                self._flush();
+            }
         } else {
             if (self.logger) {
                 self.logger.warn('KafkaRestClient could not connect to kafka');
