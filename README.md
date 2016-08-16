@@ -1,6 +1,6 @@
 # winston-kafka
 
-A [kafka]() transport for [winston]()
+A [kafka](http://kafka.apache.org/) transport for [winston](https://github.com/winstonjs/winston)
 
 ## Usage
 
