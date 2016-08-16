@@ -21,24 +21,27 @@
 var test = require('tape');
 
 var KafkaLogger = require('../index.js');
-var KafkaServer = require('./lib/kafka-server.js');
+var KafkaRestProxyServer = require('./lib/kafka-rest-proxy-server');
 
 test('KafkaLogger writes to a real kafka server', function (assert) {
-    var server = KafkaServer(function (error, msg) {
+    var server = new KafkaRestProxyServer(4444, function (msg) {
         server.emit('msg', msg);
     });
 
+    server.start();
+
     var isDisabledFlag = false;
     var logger = new KafkaLogger({
-        topic: 'test-topic',
-        leafHost: 'localhost',
-        leafPort: server.port,
+        topic: 'testTopic0',
+        proxyHost: 'localhost',
+        proxyPort: 4444,
+        blacklistMigrator: true,
+        blacklistMigratorUrl: 'localhost:2222',
         isDisabled: function () {
             return isDisabledFlag;
         }
     });
 
-    logger.log('error', 'some message');
     server.once('msg', function (msg) {
         assert.ok(msg);
 
@@ -52,7 +55,7 @@ test('KafkaLogger writes to a real kafka server', function (assert) {
                 assert.ok(msg);
 
                 logger.destroy();
-                server.close();
+                server.stop();
                 assert.end();
             });
         });
@@ -63,4 +66,6 @@ test('KafkaLogger writes to a real kafka server', function (assert) {
             assert.ok(false, 'wrote a message');
         }
     });
+
+    logger.log('error', 'some message');
 });

@@ -23,39 +23,8 @@ var test = require('tape');
 var KafkaLogger = require('../index.js');
 var KafkaServer = require('./lib/kafka-server.js');
 
-test('KafkaLogger writes to a real kafka server', function (assert) {
-    var server = KafkaServer(function (error, msg) {
-        assert.equal(msg.topic, 'test-topic');
-
-        var message = msg.messages[0];
-        assert.equal(message.payload.level, 'error');
-        assert.equal(message.payload.msg, 'some message');
-
-        server.close();
-        logger.destroy();
-        assert.end();
-    });
-
-    var logger = new KafkaLogger({
-        topic: 'test-topic',
-        leafHost: 'localhost',
-        leafPort: server.port
-    });
-
-    logger.log('error', 'some message');
-});
-
 var KafkaRestProxyServer = require('./lib/kafka-rest-proxy-server');
 test('KafkaLogger double writes to a real kafka server', function (assert) {
-  var server = KafkaServer(function (error, msg) {
-      assert.equal(msg.topic, 'testTopic0');
-
-      var message = msg.messages[0];
-      assert.equal(message.payload.level, 'error');
-      assert.equal(message.payload.msg, 'some message');
-      server.close();        
-  });
-  
   var restServer = new KafkaRestProxyServer(4444, function (msg) {
     assert.equal(msg.host ,require('os').hostname());
     assert.equal(msg.level,'error');
@@ -66,8 +35,6 @@ test('KafkaLogger double writes to a real kafka server', function (assert) {
 
   var logger = new KafkaLogger({
       topic: 'testTopic0',
-      leafHost: 'localhost',
-      leafPort: server.port,
       proxyHost: 'localhost',
       proxyPort: 4444,
       blacklistMigrator: true,

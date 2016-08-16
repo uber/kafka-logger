@@ -43,8 +43,10 @@ KafkaRestProxyServer.prototype.handle = function handle(req, res) {
     if (req.method === 'GET') {
         res.end(JSON.stringify(messages));
     } else if (req.method === 'POST') {
+
         var body = '';
         req.on('data', function (data) {
+            data = data.slice(8, data.length);
             body += data;
         });
         req.on('end', function () {
