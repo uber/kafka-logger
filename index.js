@@ -21,7 +21,6 @@
 /* jshint forin: false */
 var util = require('util');
 var Transport = require('winston-uber').Transport;
-var NodeSol = require('nodesol-write').NodeSol;
 var KafkaRestClient = require('kafka-rest-client');
 var hostName = require('os').hostname();
 var extend = require('xtend');
@@ -97,7 +96,7 @@ function KafkaLogger(options) {
 
     this.kafkaProber = options.kafkaProber || null;
     this.failureHandler = options.failureHandler || null;
-    this.kafkaClient = options.kafkaClient || null;
+    this.kafkaClient = null;
     this.isDisabled = options.isDisabled || null;
 
     this.connected = true;
@@ -131,12 +130,8 @@ function KafkaLogger(options) {
         this.kafkaRestClientConnected = true;
     }
 
-    if (!this.kafkaClient && this.leafHost && this.leafPort) {
-        this.connected = false;
-        this.kafkaClient = new NodeSol({
-            leafHost: this.leafHost, leafPort: this.leafPort
-        });
-        this.kafkaClient.connect(onConnect);
+    if (this.leafHost || this.leafPort) {
+        throw new Error('[kafka-logger] kafka7 no longer supported');
     }
 }
 
@@ -230,7 +225,7 @@ function produceMessage(self, logMessage, callback) {
 
     if (self.kafkaRestClientConnected) {
         self.kafkaRestClient.produce(self.topic, JSON.stringify(logMessage), logMessage.ts);
-        if (!self.kafkaClient) {
+        if (!self.kafkaClient && callback) {
             callback();
         }
     }

@@ -36,7 +36,6 @@
   },
   "dependencies": {
     "kafka-rest-client": "^1.7.0",
-    "nodesol-write": "^2.0.2",
     "winston-uber": "^1.0.0",
     "xtend": "^4.0.0"
   },
